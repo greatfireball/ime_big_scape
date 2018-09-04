@@ -28,10 +28,12 @@ RUN conda install -y \
 RUN conda install -c bioconda hmmer biopython fasttree
 RUN conda install -c anaconda networkx
 
-COPY ./ /usr/src/BiG-SCAPE
 WORKDIR /usr/src
 ## Cloning BiG-SCAPE
-#RUN git clone https://github.com/greatfireball/ime_big_scape.git
+RUN git clone https://github.com/greatfireball/ime_big_scape.git BiG-SCAPE && \
+    cd BiG-SCAPE && \
+    git checkout ${VCS_REF} && \
+    rm -rf .git
 
 ## geting Pfam
 WORKDIR /usr/src/BiG-SCAPE
