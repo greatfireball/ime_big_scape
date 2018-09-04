@@ -1,5 +1,5 @@
-ARG osversion=4.5.4
-FROM conda/miniconda3:${osversion}
+ARG osversion=20180904
+FROM greatfireball/conda-miniconda3:${osversion}
 
 ARG VERSION=master
 ARG VCS_REF
