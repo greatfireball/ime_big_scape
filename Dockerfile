@@ -1,6 +1,20 @@
 ARG osversion=4.5.4
 FROM conda/miniconda3:${osversion}
 
+ARG VERSION=master
+ARG VCS_REF
+ARG BUILD_DATE
+ARG osversion
+
+RUN echo "osversion: "${osversion}", VCS_REF: "${VCS_REF}", BUILD_DATE: "${BUILD_DATE}", VERSION: "${VERSION}
+
+LABEL maintainer="frank.foerster@ime.fraunhofer.de" \
+      description="Dockerfile providing the Big scape pipeline" \
+      version=${VERSION} \
+      org.label-schema.vcs-ref=${VCS_REF} \
+      org.label-schema.build-date=${BUILD_DATE} \
+      org.label-schema.vcs-url="https://github.com/greatfireball/ime_big_scape.git"
+
 RUN apt-get update && apt-get install -y git wget
 
 RUN conda create --name bigscape
