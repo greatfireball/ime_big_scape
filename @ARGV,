@@ -1,0 +1,16 @@
+Aufruf: open [OPTIONEN] -- Befehl
+
+Dieses Werkzeug hilft Ihnen, ein Programm auf einem neuen virtuellen Terminal (VT) zu starten.
+
+Optionen:
+  -c, --console=NUM   Die angegebene VT-Nummer verwenden;
+  -e, --exec          Den Befehl ausführen ohne einen neuen Prozess zu erzeugen;
+  -f, --force         Öffnen eines VT ohne Prüfung erzwingen;
+  -l, --login         Den Befehl zu einer Login-Shell machen;
+  -u, --user          Den Besitzer des aktuellen VT bestimmen;
+  -s, --switch        Zum neuen VT wechseln;
+  -w, --wait          Auf Abschluss des Befehls warten;
+  -v, --verbose       Eine Nachricht für jede Aktion ausgeben;
+  -V, --version       Programmversion ausgeben und beenden;
+  -h, --help          Eine kurze Hilfenachricht ausgeben.
+
