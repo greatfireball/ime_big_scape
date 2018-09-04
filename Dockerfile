@@ -1,4 +1,5 @@
-FROM conda/miniconda3
+ARG osversion=4.5.4
+FROM conda/miniconda3:${osversion}
 
 RUN apt-get update && apt-get install -y git wget
 
