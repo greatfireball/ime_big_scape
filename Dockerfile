@@ -37,7 +37,9 @@ RUN git clone https://github.com/greatfireball/ime_big_scape.git BiG-SCAPE && \
 
 ## geting Pfam
 WORKDIR /usr/src/BiG-SCAPE
-RUN wget -O - ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz | zcat - >Pfam-A.hmm && hmmpress Pfam-A.hmm
+RUN wget -O - ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hmm.gz | \
+    zcat - >Pfam-A.hmm && \
+    hmmpress Pfam-A.hmm
 
 RUN chmod +x /usr/src/BiG-SCAPE/*py  
 RUN chmod 777 /home  
