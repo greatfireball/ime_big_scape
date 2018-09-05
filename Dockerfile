@@ -43,6 +43,7 @@ RUN wget -O - ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam31.0/Pfam-A.hm
 
 RUN chmod +x /usr/src/BiG-SCAPE/*py  
 RUN chmod 777 /home  
+RUN chmod a+wr /usr/src/BiG-SCAPE/domains_color_file.tsv
 ENV PATH /usr/src/BiG-SCAPE:$PATH
 USER 1000:1000
 RUN mkdir /home/input /home/output
