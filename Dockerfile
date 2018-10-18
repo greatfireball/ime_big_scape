@@ -17,7 +17,7 @@ LABEL maintainer="frank.foerster@ime.fraunhofer.de" \
 
 RUN apt-get update && apt-get install -y git wget
 
-RUN conda create --name bigscape
+RUN conda create --name bigscape --yes
 #RUN source activate bigscape
 RUN [ "/bin/bash", "-c","source activate bigscape"]
 RUN conda install -y \
@@ -25,8 +25,8 @@ RUN conda install -y \
 	scipy \ 
 	scikit-learn 
 
-RUN conda install -c bioconda hmmer biopython fasttree
-RUN conda install -c anaconda networkx
+RUN conda install -y -c bioconda hmmer biopython fasttree
+RUN conda install -y networkx
 
 WORKDIR /usr/src
 ## Cloning BiG-SCAPE
