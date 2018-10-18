@@ -175,7 +175,7 @@ def process_gbk_files(gbk, min_bgc_size, bgc_info, files_no_proteins, files_no_b
                     else:
                         strand = '-'
                         
-                    fasta_header = "{}_ORF{}:gid:{}:pid:{}:loc:{}:{}:strand:{}".format(clusterName, str(cds_ctr), str(gene_id), str(protein_id), str(gene_start), str(gene_end), strand)
+                    fasta_header = "{}_ORF{}:gid:{}:pid:{}:loc:{}:{}:strand:{}".format(clusterName, str(cds_ctr), str(gene_id).replace(":","_"), str(protein_id).replace(":","_"), str(gene_start), str(gene_end), strand)
                     fasta_header = fasta_header.replace(">","") #the coordinates might contain larger than signs, tools upstream don't like this
                     fasta_header = fasta_header.replace(" ", "") #the domtable output format (hmmscan) uses spaces as a delimiter, so these cannot be present in the fasta header
 
@@ -1922,16 +1922,6 @@ def clusterJsonBatch(bgcs, pathBase, className, matrix, pos_alignments, cutoffs=
     return family_data
 
 
-class FloatRange(object):
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
-    def __eq__(self, other):
-        return self.start <= other <= self.end
-    def __repr__(self):
-        return '{}-{}'.format(self.start, self.end)
-
-
 def CMD_parser():
     parser = ArgumentParser(prog="BiG-SCAPE")
     
@@ -2003,25 +1993,25 @@ def CMD_parser():
                         classification. E.g. \"--banned_classes PKSI PKSOther\"")
 
     parser.add_argument("--cutoffs", dest="cutoffs", nargs="+", default=[0.30], 
-                        type=float, choices=[FloatRange(0.0, 1.0)], 
-                        help="Generate networks using multiple raw distance \
-                    cutoff values, example: --cutoffs 0.1, 0.25, 0.5, 1.0. Default: \
-                    c=0.3.")
+                        type=float, help="Generate networks using multiple raw \
+                        distance cutoff values. Values should be in the range \
+                        [0.0, 1.0]. Example: --cutoffs 0.1 0.25 0.5 1.0. Default: \
+                        c=0.3.")
                     
-    parser.add_argument("--clans-off", dest="clans",action="store_false", 
+    parser.add_argument("--clans-off", dest="clans", action="store_false", 
                         default=True, help="BiG-SCAPE will perform a second \
                         layer of clustering and attempt to group families \
                         assigned from clustering with cutoff of 0.5 to clans")
 
     parser.add_argument("--clan_cutoff",dest="clan_cutoff",default=[0.3,0.7], 
-                        type=float, choices=[FloatRange(0.0, 1.0)],nargs=2,
-                        help="Cutoff Parameters for which clustering families \
-                        into clans will be performed in raw distance. First \
-                        value is the cutoff value family assignments for BGCs \
-                        used in clan clustering (default: 0.3). Second value is \
-                        the cutoff value for clustering families into clans \
-                        (default: 0.7). Average linkage for BGCs in a family is\
-                        used for distances between families. Example: \
+                        type=float, nargs=2, help="Cutoff Parameters for which \
+                        clustering families into clans will be performed in raw \
+                        distance. First value is the cutoff value family \
+                        assignments for BGCs used in clan clustering (default: \
+                        0.3). Second value is the cutoff value for clustering \
+                        families into clans (default: 0.7). Average linkage for \
+                        BGCs in a family is used for distances between families. \
+                        Valid values are in the range [0.0, 1.0]. Example: \
                         --clan_cutoff 0.3 0.7)")
 
     parser.add_argument("--hybrids-off", dest="hybrids", action="store_false", 
@@ -2056,11 +2046,15 @@ def CMD_parser():
                         sequences. Use if alignments have been generated in a \
                         previous run.")
     
-    parser.add_argument("--mibig", dest="use_relevant_mibig", action=
-        "store_true", default=False, help="Use included BGCs from then MIBiG \
-        database. Only relevant (i.e. those with distance < max(cutoffs) against\
-        the input set) will be used. Using version (version 1.3). See https://mibig.secondarymetabolites.org/")
-     
+    parser.add_argument("--mibig", dest="mibig14", default=False, action="store_true",
+                        help="Use included BGCs from then MIBiG database. Only \
+                        relevant (i.e. those with distance < max(cutoffs) against\
+                        the input set) will be used. Currently uses version 1.4 \
+                        of MIBiG. See https://mibig.secondarymetabolites.org/")
+    
+    parser.add_argument("--mibig13", dest="mibig13", default=False, action="store_true",
+                        help="Include BGCs from the previous version of MIBiG (1.3)")
+    
     parser.add_argument("--query_bgc", help="Instead of making an all-VS-all \
                     comparison of all the input BGCs, choose one BGC to \
                     compare with the rest of the set (one-VS-all). The \
@@ -2071,7 +2065,7 @@ def CMD_parser():
                         found in the domain_whitelist.txt file", default=False,
                         action="store_true")
 
-    parser.add_argument("--version", action="version", version="%(prog)s 201809")
+    parser.add_argument("--version", action="version", version="%(prog)s 20181005")
 
     return parser.parse_args()
 
@@ -2153,24 +2147,25 @@ if __name__=="__main__":
     cutoff_list = options.cutoffs
     for c in cutoff_list:
         if c <= 0.0 or c > 1.0:
-            print(" Removing invalid cutoff value {}".format(str(c)))
-            cutoff_list.remove(c)
+            sys.exit(" Invalid cutoff value {}".format(str(c)))
     max_cutoff = max(cutoff_list)
             
     # if we want to classify by clans make sure that the clanCutoff is included
     # in the cutoffs to do AP in clusterJsonBatch
     if options.clans:
         fc, cc = options.clan_cutoff
+        if cc < fc:
+            sys.exit("Error: first value in the clan_cutoff parameter should be smaller than the second")
         if fc not in cutoff_list:
             if fc <= 0.0 or fc > 1.0:
                 sys.exit("Error: invalid cutoff value for GCF calling")
             else:
-                cutoff_list = sorted(cutoff_list.append(fc))
+                cutoff_list.append(fc)
+                cutoff_list.sort()
             
         if cc <= 0.0 or cc > 1.0:
             sys.exit("Error: invalid cutoff value for GCC calling")
         
-    
     output_folder = str(options.outputdir)
     
     pfam_dir = str(options.pfam_dir)
@@ -2194,6 +2189,10 @@ if __name__=="__main__":
             sys.exit("Error: Query BGC not found")
             
     verbose = options.verbose
+    
+    if options.mibig14 and options.mibig13:
+        sys.exit("Error: choose only one MIBiG version")
+    use_relevant_mibig = options.mibig13 or options.mibig14
     
     run_mode_string = ""
     networks_folder_all = "networks_all"
@@ -2310,10 +2309,13 @@ if __name__=="__main__":
     # Read included MIBiG
     # Change this for every officially curated MIBiG bundle
     # (file, final folder, number of bgcs)
-    mibig_zipfile_numbgcs = ("MIBiG_1.3_gbks.zip", "1.3+_final_gbks", 1393)
-    use_relevant_mibig = options.use_relevant_mibig
     mibig_set = set()
     if use_relevant_mibig:
+        if options.mibig13:
+            mibig_zipfile_numbgcs = ("MIBiG_1.3_final.zip", "MIBiG_1.3_final", 1393)
+        else:
+            mibig_zipfile_numbgcs = ("MIBiG_1.4_final.zip", "MIBiG_1.4_final", 1808)
+        
         print("\n Trying to read bundled MIBiG BGCs as reference")
         mibig_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Annotated_MIBiG_reference")
         bgcs_path = os.path.join(mibig_path,mibig_zipfile_numbgcs[1])
