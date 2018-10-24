@@ -15,7 +15,7 @@ LABEL maintainer="frank.foerster@ime.fraunhofer.de" \
       org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.vcs-url="https://github.com/greatfireball/ime_big_scape.git"
 
-RUN apt-get update && apt-get install -y git wget
+RUN apt-get update && apt-get install -y git wget unzip
 
 RUN conda create --name bigscape --yes
 #RUN source activate bigscape
@@ -34,6 +34,11 @@ RUN git clone https://github.com/greatfireball/ime_big_scape.git BiG-SCAPE && \
     cd BiG-SCAPE && \
     git checkout ${VCS_REF} && \
     rm -rf .git
+
+## decompress reference files
+WORKDIR /usr/src/BiG-SCAPE/Annotated_MIBiG_reference
+RUN unzip MIBiG_1.3_final.zip && \
+    unzip MIBiG_1.4_final.zip
 
 ## geting Pfam
 WORKDIR /usr/src/BiG-SCAPE
